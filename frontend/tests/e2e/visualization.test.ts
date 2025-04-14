@@ -1,0 +1,143 @@
+import { expect, test } from "@playwright/test";
+
+test.describe("Visualization", () => {
+  test.beforeEach(async ({ page }) => {
+    // login
+    await page.goto("/login");
+    await page.fill('input[name="username"]', "dev1");
+    await page.fill('input[name="password"]', "developer@123influx");
+    await page.click('button[type="submit"]');
+
+    // Wait for redirection to the editor page
+    await page.waitForURL("/editor");
+  });
+
+  test("Visualization should be rendered correctly", async ({ page }) => {
+    // Select home for bucket
+    await page.getByText("Select a bucket").click();
+    await page.getByText("home").click();
+
+    // Drag date range from sidebar to flow
+    await page
+      .getByRole("button", { name: "filter date range" })
+      .dragTo(page.locator(".react-flow__pane"));
+
+    await page.getByRole("button", { name: "Align" }).click();
+    // Link bucket and date range
+    await page
+      .locator('button:has-text("bucket") .react-flow__handle-bottom')
+      .first()
+      .dragTo(
+        page.locator('button:has-text("date range") .react-flow__handle-top'),
+      );
+
+    await page.getByRole("button", { name: "Align" }).click();
+
+    // Select date from 2022-01-01 to 2022-01-08
+    await page
+      .locator('button:has-text("date range")')
+      ?.filter({ hasText: "Pick a date range" })
+      ?.click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page.getByLabel("Go to previous month").click();
+    await page
+      .getByRole("gridcell", { name: "1", exact: true })
+      .first()
+      .click();
+    await page
+      .getByLabel("January")
+      .getByRole("gridcell", { name: "8", exact: true })
+      .click();
+    // await page.getByText("Confirm").click();
+
+    // Drag measurement from sidebar to flow
+    await page
+      .getByRole("button", { name: "selector measurement" })
+      .dragTo(page.locator(".react-flow__pane"));
+
+    // Link date range and measurement
+    await page
+      .locator('button:has-text("date range") .react-flow__handle-bottom')
+      .first()
+      .dragTo(
+        page.locator('button:has-text("measurement") .react-flow__handle-top'),
+      );
+
+    // Select measurement
+    await page.getByText("Select a measurement").click();
+    await page.getByRole("option", { name: "home" }).click();
+
+    await page.getByRole("button", { name: "Align" }).click();
+    // Drag field from sidebar to flow
+    await page
+      .getByRole("button", { name: "selector field" })
+      .dragTo(page.locator(".react-flow__pane"));
+
+    // Link measurement and field
+    await page
+      .locator('button:has-text("measurement") .react-flow__handle-bottom')
+      .first()
+      .dragTo(page.locator('button:has-text("field") .react-flow__handle-top'));
+
+    // Select field
+    await page.getByText("Select a field").click();
+    await page.getByRole("option", { name: "co" }).click();
+
+    await page.getByRole("button", { name: "Align" }).click();
+
+    // Run query
+    await page.locator("header").getByRole("button").nth(4).click();
+    await expect(page.getByText("Kitchen").first()).toBeVisible();
+    await expect(page.getByText("Living Room").first()).toBeVisible();
+    await expect(page.getByText("co").first()).toBeVisible();
+
+    // Switch to Line char
+    await page.getByText("Line Chart").click();
+    await page.waitForTimeout(3000);
+    await expect(page.locator("css=.recharts-surface")).toBeVisible();
+    await expect(page.locator("css=.recharts-line").first()).toBeVisible();
+
+    // Switch to Bar Chart
+    await page.getByText("Bar Chart").click();
+    await page.waitForTimeout(3000);
+    await expect(page.locator("css=.recharts-surface")).toBeVisible();
+    await expect(page.locator("css=.recharts-bar").first()).toBeVisible();
+
+    // Switch to Area Chart
+    await page.getByText("Area Chart").click();
+    await page.waitForTimeout(3000);
+    await expect(page.locator("css=.recharts-surface")).toBeVisible();
+    await expect(page.locator("css=.recharts-area").first()).toBeVisible();
+  });
+});

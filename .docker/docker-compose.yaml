@@ -1,0 +1,77 @@
+services:
+  influxdb:
+    image: influxdb:${INFLUXDB_VERSION}
+    container_name: ${INFLUXDB_CONTAINER}-${INFLUXDB_VERSION}
+    ports:
+      - ${INFLUXDB_PORT}
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=${DOCKER_INFLUXDB_INIT_MODE}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE}
+      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+      - INFLUXDB_URL=http://influxdb:${INFLUXDB_PORT}
+      - INFLUXD_SESSION_LENGTH=${INFLUXD_SESSION_LENGTH}
+    networks:
+      - main_network
+  grafana:
+    image: grafana/grafana:${GF_VERSION}
+    container_name: ${GF_CONTAINER}-${GF_VERSION}
+    ports:
+      - ${GF_PORT}
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    depends_on:
+      - influxdb
+    volumes:
+      - ${GF_INI}:/etc/grafana/grafana.ini
+    networks:
+      - main_network
+  server:
+    build:
+      context: ./server
+      dockerfile: ${SERVER_DOCKERFILE}
+    image: ${SERVER_IMAGE}:${SERVER_VERSION}
+    container_name: ${SERVER_CONTAINER}-${SERVER_VERSION}
+    ports:
+      - ${SERVER_PORT}
+    volumes:
+      - ./server:/app
+    depends_on:
+      - influxdb
+      - grafana
+    networks:
+      - main_network
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: ${FE_DOCKERFILE}
+  #   image: ${FE_IMAGE}:${FE_VERSION}
+  #   container_name: ${FE_CONTAINER}-${FE_VERSION}
+  #   ports:
+  #     - ${FE_PORT}
+  #   environment:
+  #     - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+  #   depends_on:
+  #     - influxdb
+  #     - grafana
+  #     - server
+  #   develop:
+  #     watch:
+  #       - path: ./frontend/package.json
+  #         action: rebuild
+  #       - path: ./frontend/package-lock.json
+  #         action: rebuild
+  #       - path: ./frontend/pnpm-lock.json
+  #         action: rebuild
+  #       - path: ./frontend
+  #         target: /app
+  #         action: sync
+  #   networks:
+  #     - main_network
+
+networks:
+  main_network:
+    driver: bridge
